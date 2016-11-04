@@ -43,17 +43,17 @@ def main():
     score = tf.matmul(layer1,W2)
     probability = tf.nn.sigmoid(score)
 
-    # 報酬計算？？
+    # 方策計算のネットワーク
     tvars = tf.trainable_variables()
     input_y = tf.placeholder(tf.float32,[None,1], name="input_y")
     advantages = tf.placeholder(tf.float32,name="reward_signal")
 
-    # loss計算？？
+    # loss計算部分
     loglik = tf.log(input_y * (input_y - probability) + (1 - input_y) * (input_y + probability))
     loss = -tf.reduce_mean(loglik * advantages)
     newGrads = tf.gradients(loss, tvars)
 
-    # 最適化手法？？
+    # 最適化手法
     adam = tf.train.AdamOptimizer(learning_rate=LR)
     W1Grad = tf.placeholder(tf.float32,name="batch_grad1")
     W2Grad = tf.placeholder(tf.float32,name="batch_grad2")
@@ -66,7 +66,6 @@ def main():
     episode_number = 1
     init = tf.initialize_all_variables()
 
-    # Launch the graph
     with tf.Session() as sess:
         sess.run(init)
 
