@@ -8,14 +8,16 @@ import tensorflow as tf
 
 
 ENV_NAME        = "CartPole-v0" # 環境
-N_EPISODES      = 10000         # 最大エピソード数
+N_EPISODES      = 5000         # 最大エピソード数
 N_INPUT         = 4             # 入力の次元数
 GAMMA           = 0.99          # 割引率
 EPS             = 0.1           # 初期epsilon
 N_HIDDEN        = 10            # 隠れ層のユニット数
 LR              = 1e-2          # 学習率
 N_BATCH         = 50            # バッチサイズ
-RENDER_INTERVAL = 500           # 映像の表示感覚
+RENDER_INTERVAL = 500           # 動画の表示間隔
+IS_SAVE         = True          # 動画を保存するか
+RES_PATH        = "./result/" + ENV_NAME
 
 def discount_rewards(r):
     """
@@ -69,6 +71,9 @@ def main():
     with tf.Session() as sess:
         sess.run(init)
 
+        if IS_SAVE:
+            env.monitor.start(RES_PATH, force=True)
+
         observation = env.reset() # 環境の初期化
 
         # 勾配の初期化
@@ -76,10 +81,11 @@ def main():
         for ix, grad in enumerate(gradBuffer):
             gradBuffer[ix] = grad * 0
 
+        print "episode,reward_avg"
         while episode_number <= N_EPISODES:
 
             # いい結果が出た時のみ映像を表示する
-            if episode_number % RENDER_INTERVAL == 0:
+            if not IS_SAVE and episode_number % RENDER_INTERVAL == 0:
                 env.render()
 
             x = np.reshape(observation,[1,N_INPUT])                     # 環境をNNに入力できるように変換
@@ -116,18 +122,20 @@ def main():
                     for ix,grad in enumerate(gradBuffer):
                         gradBuffer[ix] = grad * 0
 
-                    # エピソード報酬の
+                    # エピソード報酬
                     reward_avg = reward_sum/N_BATCH
-                    print 'episode %i : average reward %f' % (episode_number, reward_avg)
+                    print '%i,%f' % (episode_number, reward_avg)
 
-                    # 報酬平均が200を超えると学習完了
-                    if reward_avg > 200:
-                        break
+                    ## 報酬平均が200を超えると学習完了
+                    #if reward_avg > 200:
+                    #    print "Complete!!"
+                    #    break
 
                     reward_sum = 0
                 observation = env.reset()   # 環境の初期化
 
-        print "Complete!!"
+        if IS_SAVE:
+            env.monitor.close()
 
 if __name__ == '__main__':
     main()
